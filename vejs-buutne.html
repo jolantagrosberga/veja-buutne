@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinētiskā Skulptūra: Vēja Būtne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#0A0D12;
+    --bg-panel:#12161D;
+    --bg-panel-2:#181D26;
+    --line-grid: rgba(255,255,255,0.05);
+    --ink:#EDEAE0;
+    --ink-dim:#9AA1AC;
+    --border: rgba(255,255,255,0.10);
+    --accent:#E7DEC8;
+    --cycle-duration: 1s;
+    --amp-mult: 1;
+    --glow-blur: 6px;
+    --vane-duration: 4s;
+    --screw-duration: 1.3s;
+    --creature-width: 340px;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(255,169,77,0.06), transparent 55%),
+      radial-gradient(ellipse at 90% 110%, rgba(94,201,232,0.05), transparent 55%),
+      repeating-linear-gradient(0deg, var(--line-grid) 0 1px, transparent 1px 34px),
+      repeating-linear-gradient(90deg, var(--line-grid) 0 1px, transparent 1px 34px),
+      var(--bg-void);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    padding:28px 18px 60px;
+  }
+
+  .wrap{ max-width:1080px; margin:0 auto; }
+
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:10px;
+    opacity:0.85;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(28px, 4.6vw, 44px);
+    line-height:1.05;
+    margin:0 0 12px;
+  }
+  .subtitle{
+    font-size:15px;
+    line-height:1.55;
+    color:var(--ink-dim);
+    max-width:680px;
+    margin:0 0 28px;
+  }
+  .subtitle b{ color:var(--ink); font-weight:600; }
+
+  .workshop{
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    gap:16px;
+    align-items:start;
+  }
+  @media (max-width:860px){ .workshop{ grid-template-columns: 1fr; } }
+
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    max-height:760px;
+    overflow-y:auto;
+  }
+
+  .panel h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin:18px 0 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .panel h2:first-child{ margin-top:0; }
+  .subhead{
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    color:var(--ink-dim);
+    opacity:0.7;
+    margin:8px 0 4px;
+  }
+  .clear-link{
+    font-family:'Work Sans', sans-serif;
+    text-transform:none;
+    font-size:12px;
+    color:var(--ink-dim);
+    background:none; border:none; cursor:pointer;
+    text-decoration:underline; padding:0;
+  }
+  .clear-link:hover{ color:var(--accent); }
+
+  .row2{ display:flex; gap:8px; margin-bottom:8px; }
+  .pill{
+    flex:1;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    text-align:center;
+    padding:8px 4px;
+    background:var(--bg-panel-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--ink-dim);
+    cursor:pointer;
+  }
+  .pill.active{ border-color:var(--accent); color:var(--ink); box-shadow:0 0 10px -3px var(--accent); }
+
+  .swatch-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
+  .swatch{
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    width:52px; padding:6px 3px 5px;
+    background:var(--bg-panel-2);
+    border:1px solid var(--border);
+    border-radius:9px;
+    cursor:pointer;
+    transition:border-color .15s, transform .15s, box-shadow .15s;
+    color:var(--ink-dim);
+  }
+  .swatch:hover{ transform:translateY(-2px); }
+  .swatch svg{ width:22px; height:38px; display:block; overflow:visible; }
+  .swatch span{ font-size:8.5px; text-align:center; line-height:1.15; }
+  .swatch.active{ border-color:var(--accent); color:var(--ink); box-shadow:0 0 0 1px var(--accent), 0 0 12px -2px var(--accent); }
+  .swatch.small svg{ height:26px; }
+  .swatch.eraser span{ font-size:14px; }
+
+  .color-row{ display:flex; gap:10px; margin-bottom:4px; }
+  .color-dot{ width:28px; height:28px; border-radius:50%; border:2px solid var(--border); cursor:pointer; }
+  .color-dot.active{ border-color:var(--ink); box-shadow:0 0 0 3px rgba(255,255,255,0.08); }
+
+  .wind-row{ display:flex; flex-direction:column; gap:6px; }
+  .wind-btn{
+    font-family:'Space Mono', monospace; font-size:11px; text-align:left;
+    padding:7px 10px; background:var(--bg-panel-2); border:1px solid var(--border);
+    border-radius:8px; color:var(--ink-dim); cursor:pointer;
+  }
+  .wind-btn.active{ border-color:var(--accent); color:var(--ink); }
+
+  .bind-box{ background:var(--bg-panel-2); border:1px solid var(--border); border-radius:9px; padding:10px; margin-bottom:10px; }
+  .bind-hint{ font-size:11px; color:var(--ink-dim); line-height:1.5; margin:0 0 8px; }
+  .bind-actions{ display:flex; gap:8px; }
+  .bind-btn{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:12px;
+    padding:7px 12px; border-radius:7px; border:1px solid var(--border);
+    background:transparent; color:var(--ink-dim); cursor:pointer;
+  }
+  .bind-btn.on{ border-color:var(--accent); color:var(--accent); }
+  .bind-btn:disabled{ opacity:0.35; cursor:not-allowed; }
+  .bond-chip{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'Space Mono', monospace; font-size:10.5px;
+    background:var(--bg-void); border:1px solid var(--border); border-radius:6px;
+    padding:5px 8px; margin-top:6px; color:var(--ink-dim);
+  }
+  .bond-chip button{ background:none; border:none; color:var(--ink-dim); cursor:pointer; font-size:13px; padding:0 0 0 8px; }
+  .bond-chip button:hover{ color:var(--accent); }
+
+  /* ---------- Stage ---------- */
+  .stage-frame{
+    position:relative;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%), var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    height:340px;
+    overflow:hidden;
+  }
+  .ground{
+    position:absolute; left:0; right:0; bottom:30px; height:1px;
+    background-image: repeating-linear-gradient(90deg, var(--ink-dim) 0 8px, transparent 8px 16px);
+    opacity:0.3;
+  }
+
+  .creature{ position:absolute; top:96px; left:4%; width:var(--creature-width); color:var(--accent); }
+  .creature-inner{ position:relative; width:100%; }
+
+  .spine-visual{
+    position:absolute; top:-24px; left:0; right:0; height:66px;
+    pointer-events:none;
+  }
+  .spine-visual svg{ width:100%; height:100%; overflow:visible; display:block; }
+  .creature.awake .spine-visual{ filter: drop-shadow(0 0 var(--glow-blur) currentColor) drop-shadow(0 0 calc(var(--glow-blur) * 2) currentColor); }
+
+  .slot{ position:absolute; top:0; width:30px; margin-left:-15px; }
+
+  .lower-wrap{ position:relative; width:20px; margin:0 auto; }
+  .upper-wrap{ position:absolute; bottom:100%; left:50%; width:44px; margin-left:-22px; }
+
+  .lower-hit{ position:absolute; top:0; left:-18px; right:-18px; height:96px; cursor:pointer; }
+  .upper-hit{ position:absolute; top:-72px; left:-14px; right:-14px; height:72px; cursor:pointer; }
+
+  .slot.bind-selected .lower-wrap{ outline:2px dashed #5EC9E8; outline-offset:4px; border-radius:6px; }
+
+  .seg{ position:relative; width:20px; margin:0 auto; transform-origin: top center;
+    transform: rotate(calc(var(--base-angle, 0deg) + (var(--swing, 0) * var(--amp-mult) * 1deg))); }
+  .seg.nested{ position:absolute; top:100%; left:50%; margin-left:-10px; }
+  .seg svg{ display:block; overflow:visible; }
+  @property --swing{ syntax:'<number>'; inherits:true; initial-value:0; }
+  .creature.walking .seg-depth-0{ animation: seg-stride-0 var(--cycle-duration) ease-in-out infinite; }
+  .creature.walking .seg-depth-1{ animation: seg-stride-1 var(--cycle-duration) ease-in-out infinite; }
+  .creature.walking .seg-depth-2{ animation: seg-stride-2 var(--cycle-duration) ease-in-out infinite; }
+  .creature.walking .seg-depth-3{ animation: seg-stride-3 var(--cycle-duration) ease-in-out infinite; }
+  @keyframes seg-stride-0{ 0%,100%{ --swing:-16; } 50%{ --swing:16; } }
+  @keyframes seg-stride-1{ 0%,100%{ --swing:20; } 50%{ --swing:-20; } }
+  @keyframes seg-stride-2{ 0%,100%{ --swing:-13; } 50%{ --swing:13; } }
+  @keyframes seg-stride-3{ 0%,100%{ --swing:11; } 50%{ --swing:-11; } }
+
+  .wheel-stub{ width:4px; margin:0 auto; }
+  .wheel-disc{ margin:4px auto 0; transform-origin:center; }
+  .creature.walking .wheel-disc{ animation: spin var(--cycle-duration) linear infinite; }
+
+  .lower-fin{ position:relative; transform-origin:top center; width:20px; margin:0 auto; }
+  .fin-shape{ position:absolute; left:50%; top:0; transform:translateX(-50%); }
+  .creature.walking .lower-fin{ animation: fin-row var(--cycle-duration) cubic-bezier(.45,0,.2,1) infinite; }
+  @keyframes fin-row{ 0%{ transform:rotate(-10deg); } 45%{ transform:rotate(42deg); } 100%{ transform:rotate(-10deg); } }
+
+  #headMod{ position:absolute; left:100%; top:-16px; width:24px; height:32px; z-index:4; }
+  #tailMod{ position:absolute; left:-30px; top:-16px; width:30px; height:32px; z-index:4; }
+  .head-inner{ transform-origin:left center; width:100%; height:100%; }
+  .tail-inner{ transform-origin:right center; width:100%; height:100%; }
+  .head-inner svg, .tail-inner svg{ width:100%; height:100%; overflow:visible; display:block; }
+  .creature.walking .head-inner.head-antena{ animation: sway 1.3s ease-in-out infinite; }
+  .creature.walking .head-inner.head-apala .pupil{ animation: look-around 3s ease-in-out infinite; }
+  .creature.walking .tail-inner.tail-spalvu{ animation: sway 1.6s ease-in-out infinite; }
+
+  .upper-mod{ transform-origin:bottom center; }
+  .creature.walking .upper-mod.mod-spans{ animation: flap 0.4s ease-in-out infinite; }
+  .creature.walking .upper-mod.mod-bura{ animation: sway 2.2s ease-in-out infinite; }
+  .creature.walking .upper-mod.mod-skruve{ animation: spin var(--screw-duration) linear infinite; transform-origin:center; }
+  .creature.walking .upper-mod.mod-vejradis{ animation: spin var(--vane-duration) linear infinite; transform-origin:center; }
+  @keyframes flap{ 0%,100%{ transform:rotate(-30deg); } 50%{ transform:rotate(18deg); } }
+  @keyframes sway{ 0%,100%{ transform:rotate(-8deg); } 50%{ transform:rotate(8deg); } }
+  @keyframes look-around{ 0%,100%{ transform:translateX(-1.6px); } 50%{ transform:translateX(1.6px); } }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .slot-num{
+    position:absolute; top:-4px; left:50%; transform:translateX(-50%);
+    font-family:'Space Mono', monospace; font-size:9px; color:var(--ink-dim); opacity:0.6; pointer-events:none;
+  }
+  .creature.walking .slot-num{ display:none; }
+  .slot-empty{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:11px; height:11px; border-radius:50%; border:2px dashed currentColor; opacity:0.5;
+  }
+
+  .wind-particles{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .wind-line{
+    position:absolute; height:1.5px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity:0; border-radius:2px;
+  }
+  .wind-mist{
+    position:absolute;
+    background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 72%);
+    opacity:0; filter: blur(9px); border-radius:50%;
+  }
+  .wind-particles.gusting .wind-line, .wind-particles.gusting .wind-mist{
+    animation-name: drift; animation-timing-function: linear; animation-iteration-count: infinite;
+  }
+  @keyframes drift{
+    0%{ left:-20%; opacity:0; }
+    12%{ opacity: var(--peak-op, 0.7); }
+    88%{ opacity: var(--peak-op, 0.7); }
+    100%{ left:110%; opacity:0; }
+  }
+
+  .gust-sweep{
+    position:absolute; top:0; bottom:0; left:-40%; width:38%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), var(--accent), rgba(255,255,255,0.2), transparent);
+    filter: blur(6px); opacity:0;
+  }
+  .gust-sweep.play{ animation: gust 1.3s ease-in; }
+  @keyframes gust{
+    0%{ left:-40%; opacity:0; } 12%{ opacity:0.95; } 75%{ opacity:0.6; } 100%{ left:120%; opacity:0; }
+  }
+
+  .stage-hint{
+    position:absolute; left:16px; bottom:8px;
+    font-family:'Space Mono', monospace; font-size:11px; color:var(--ink-dim); opacity:0.7; max-width:80%;
+  }
+
+  .controls{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:14px; }
+  .counter{ font-family:'Space Mono', monospace; font-size:12px; color:var(--ink-dim); }
+  .counter b{ color:var(--accent); }
+
+  .btn{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px;
+    padding:11px 22px; border-radius:9px; border:1px solid var(--accent);
+    background:transparent; color:var(--accent); cursor:pointer;
+    transition:background .15s, color .15s, box-shadow .15s;
+  }
+  .btn.primary{ background:var(--accent); color:#0A0D12; }
+  .btn.primary:hover{ box-shadow:0 0 18px -2px var(--accent); }
+  .btn:disabled{ opacity:0.35; cursor:not-allowed; box-shadow:none; }
+  .btn.ghost{ border-color:var(--border); color:var(--ink-dim); }
+  .btn.ghost:hover{ border-color:var(--ink-dim); color:var(--ink); }
+
+  .perf-controls{ display:none; gap:10px; flex-wrap:wrap; }
+  .perf-controls.show{ display:flex; }
+  .build-controls.hide{ display:none; }
+
+  details.info{ margin-top:26px; background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  details.info summary{ cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:15px; color:var(--ink); list-style:none; }
+  details.info summary::-webkit-details-marker{ display:none; }
+  details.info summary::before{ content:"+ "; color:var(--accent); font-family:'Space Mono', monospace; }
+  details.info[open] summary::before{ content:"– "; }
+  details.info p{ font-size:14px; line-height:1.65; color:var(--ink-dim); margin:12px 0; }
+  details.info .question{ color:var(--ink); font-style:italic; border-left:2px solid var(--accent); padding-left:12px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="eyebrow">8.4 · Dažādu mākslas veidu sintēze — māksla + tehnoloģija</div>
+  <h1>Kinētiskā Skulptūra: Vēja Būtne</h1>
+  <p class="subtitle"><b>Teo Jansens</b> būvē pludmales radības, ko dzen tikai vējš. <b>Leonardo da Vinči</b> skicēja lidojošas skrūves un pašnesošus tiltus. Uzbūvē savu mugurkaulu, piestiprini apakšā piedziņu (kājas, riteņus vai spuras) un augšā mehānismus, sasien daļas, kas jākustas kopā, izvēlies kustības veidu — un palaid vēju.</p>
+
+  <div class="workshop">
+    <div class="panel build-controls" id="palettePanel">
+
+      <h2>Mugurkaula struktūra</h2>
+      <div class="row2" id="spineStructRow"></div>
+
+      <h2>Detaļu blīvums</h2>
+      <div class="row2" id="spineSpacingRow"></div>
+
+      <h2>Mugurkaula kustība</h2>
+      <div class="row2" id="spineMotionRow"></div>
+
+      <h2>Galva</h2>
+      <div class="swatch-row" id="headSwatches"></div>
+
+      <h2>Aste</h2>
+      <div class="swatch-row" id="tailSwatches"></div>
+
+      <h2>Apakšējā piedziņa <button class="clear-link" id="clearBtn">notīrīt visu</button></h2>
+      <div class="subhead">Locītavu kājas</div>
+      <div class="swatch-row" id="legSwatches"></div>
+      <div class="subhead">Riteņi</div>
+      <div class="swatch-row" id="wheelSwatches"></div>
+      <div class="subhead">Spuras</div>
+      <div class="swatch-row" id="finSwatches"></div>
+      <div class="swatch-row" id="eraserLowerRow"></div>
+
+      <h2>Augšējie mehānismi</h2>
+      <div class="swatch-row" id="upperSwatches"></div>
+
+      <h2>Sasiešana</h2>
+      <div class="bind-box">
+        <p class="bind-hint" id="bindHint">Atlasi 2 vai vairāk apakšējās daļas, lai tās kustētos vienā ritmā. Nesasietās daļas kustas katra pati.</p>
+        <div class="bind-actions">
+          <button class="bind-btn" id="bindToggleBtn">Sasiet daļas</button>
+          <button class="bind-btn" id="bindConfirmBtn" style="display:none;" disabled>Apvienot (0)</button>
+        </div>
+        <div id="bondList"></div>
+      </div>
+
+      <h2>Brīvā zīmēšana</h2>
+      <div class="bind-box">
+        <p class="bind-hint">Ieslēdz un klikšķini uz jebkuras jau novietotas detaļas (kāju, riteni, spuru, augšējo mehānismu, galvu vai asti), lai uz tās uzzīmētu savu rakstu.</p>
+        <div class="bind-actions">
+          <button class="bind-btn" id="drawToggleBtn">✏️ Zīmēt uz detaļas</button>
+        </div>
+      </div>
+
+      <h2>Materiāls</h2>
+      <div class="color-row" id="materialSwatches"></div>
+
+      <h2>Vēja stiprums</h2>
+      <div class="wind-row" id="windButtons"></div>
+    </div>
+
+    <div>
+      <div class="stage-frame" id="stageFrame">
+        <div class="ground"></div>
+        <div class="wind-particles" id="windParticles"></div>
+        <div class="gust-sweep" id="gustSweep"></div>
+        <div class="creature" id="creature">
+          <div class="creature-inner" id="creatureInner">
+            <div class="spine-visual" id="spineVisual"></div>
+            <div id="headMod"></div>
+            <div id="tailMod"></div>
+          </div>
+        </div>
+        <div class="stage-hint" id="stageHint">Izvēlies daļu kreisajā panelī, tad klikšķini virs mugurkaula (augšējie mehānismi) vai zem tā (piedziņa)</div>
+      </div>
+
+      <div class="controls">
+        <div class="counter" id="counter">Pievienotas <b>0</b> / 5 piedziņas daļas — vajag vismaz 3</div>
+        <div class="build-controls" id="buildBtnWrap" style="display:flex; gap:10px;">
+          <button class="btn ghost" id="randomBtn">Nejauša būtne</button>
+          <button class="btn primary" id="launchBtn" disabled>Palaist vēju →</button>
+        </div>
+        <div class="perf-controls" id="perfControls">
+          <button class="btn ghost" id="pauseBtn">⏸ Apturēt vēju</button>
+          <button class="btn" id="backBtn">🔧 Atpakaļ uz darbnīcu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <details class="info">
+    <summary>Par Teo Jansenu, da Vinči un vēja māksliniekiem</summary>
+    <p>Kopš 1990. gadiem Teo Jansens no PVC caurulēm, koka un audekla būvē lielizmēra radības, kas patstāvīgi pārvietojas pludmalē — bez motora, bez elektronikas, bez baterijām. Reālajos Strandbeest mehānismos daudzas kājas ir sasietas kopā pie viena centrālā vārpsta, tāpēc tās kustas absolūti sinhroni — tieši to var izmēģināt arī šeit ar "Sasiešanas" rīku.</p>
+    <p>Leonardo da Vinči savos piezīmju burtnīcās skicēja lidojošu skrūvi un pašnesošu tiltu, kas balstās tikai uz mijas atsvara spēku, bez naglām vai virvēm. Abi bija ideju priekšā savam laikam — un abi apvieno mākslu ar inženierzinātni.</p>
+    <p class="question">Vai dabas spēks (vējš) var būt māksliniecisks materiāls tāpat kā krāsa vai māls? Un vai kaut kas, kas "dzīvo" tikai brīžiem, ir mazāk īsta māksla?</p>
+  </details>
+</div>
+
+<script>
+(function(){
+
+  /* ================= Data ================= */
+
+  function segMarkup(len, shape, sw, joint){
+    let body = '';
+    if(shape==='straight'){
+      body = `<line x1="10" y1="0" x2="10" y2="${len}" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round"/>`;
+    } else if(shape==='curve'){
+      body = `<path d="M10,0 Q${10+len*0.4},${len*0.5} 10,${len}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round"/>`;
+    } else if(shape==='hook'){
+      body = `<path d="M10,0 L10,${len*0.68} Q10,${len} 2,${len-2}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round"/>`;
+    } else if(shape==='fan'){
+      body = `<line x1="10" y1="0" x2="10" y2="${len}" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round"/>
+              <line x1="10" y1="${len*0.6}" x2="${10+len*0.32}" y2="${len}" stroke="currentColor" stroke-width="${sw*0.7}" stroke-linecap="round" opacity="0.7"/>
+              <line x1="10" y1="${len*0.6}" x2="${10-len*0.32}" y2="${len}" stroke="currentColor" stroke-width="${sw*0.7}" stroke-linecap="round" opacity="0.7"/>`;
+    }
+    let jointMark = '';
+    if(joint==='dot'){ jointMark = `<circle cx="10" cy="0" r="2.6" fill="currentColor"/>`; }
+    else if(joint==='diamond'){ jointMark = `<rect x="7" y="-3" width="6" height="6" fill="currentColor" transform="rotate(45 10 0)"/>`; }
+    else if(joint==='gear'){
+      jointMark = `<circle cx="10" cy="0" r="3.4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <circle cx="10" cy="0" r="1" fill="currentColor"/>
+        <line x1="10" y1="-3.4" x2="10" y2="-5.2" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="10" y1="3.4" x2="10" y2="5.2" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="6.6" y1="0" x2="4.8" y2="0" stroke="currentColor" stroke-width="1.2"/>
+        <line x1="13.4" y1="0" x2="15.2" y2="0" stroke="currentColor" stroke-width="1.2"/>`;
+    }
+    return body + jointMark;
+  }
+
+  const LEG_TYPES = {
+    smaile:    { label:'Smaile',  tier:1, family:'leg', segments:[ {len:60, baseAngle:-6, shape:'straight', joint:'dot', sw:3} ] },
+    akis:      { label:'Āķis',    tier:1, family:'leg', segments:[ {len:54, baseAngle:0,  shape:'hook',     joint:'dot', sw:3} ] },
+    loks:      { label:'Loks',    tier:2, family:'leg', segments:[ {len:30, baseAngle:-14, shape:'curve',    joint:'dot',     sw:3}, {len:30, baseAngle:22,  shape:'curve',    joint:'dot',     sw:3} ] },
+    zigzags:   { label:'Zigzags', tier:2, family:'leg', segments:[ {len:26, baseAngle:-26, shape:'straight', joint:'diamond', sw:3.4}, {len:26, baseAngle:34,  shape:'straight', joint:'diamond', sw:3.4} ] },
+    skere:     { label:'Šķēre',   tier:2, family:'leg', segments:[ {len:28, baseAngle:-8,  shape:'straight', joint:'diamond', sw:3}, {len:28, baseAngle:-32, shape:'straight', joint:'diamond', sw:3} ] },
+    zirneklis: { label:'Zirneklis', tier:3, family:'leg', segments:[ {len:17, baseAngle:-10, shape:'straight', joint:'dot', sw:2}, {len:16, baseAngle:-16, shape:'straight', joint:'dot', sw:2}, {len:15, baseAngle:-20, shape:'straight', joint:'dot', sw:2}, {len:13, baseAngle:-24, shape:'straight', joint:'dot', sw:2} ] },
+    zobrats:   { label:'Zobrats (da Vinči)', tier:3, family:'leg', segments:[ {len:22, baseAngle:-8,  shape:'straight', joint:'gear', sw:3}, {len:20, baseAngle:16,  shape:'straight', joint:'gear', sw:3}, {len:19, baseAngle:-10, shape:'straight', joint:'gear', sw:3} ] },
+    vedeklis:  { label:'Vēdeklis', tier:3, family:'leg', segments:[ {len:21, baseAngle:-30, shape:'fan', joint:'diamond', sw:2.5}, {len:19, baseAngle:-8,  shape:'fan', joint:'diamond', sw:2.5}, {len:17, baseAngle:16,  shape:'fan', joint:'diamond', sw:2.5} ] }
+  };
+  const TIER_LABELS = { 1:'1 posms', 2:'2 posmi', 3:'3–4 posmi' };
+
+  const WHEEL_TYPES = {
+    ritenis:    { label:'Ritenis', family:'wheel', r:15, teeth:false },
+    zobritenis: { label:'Zobrats-ritenis (da Vinči)', family:'wheel', r:15, teeth:true }
+  };
+
+  const FIN_TYPES = {
+    spura: { label:'Spura', family:'fin', len:52, wide:32, translucent:true },
+    airis: { label:'Airis', family:'fin', len:72, wide:16, translucent:false }
+  };
+
+  const UPPER_TYPES = {
+    spans:    { label:'Spārns', cls:'mod-spans',
+      svg:`<path d="M0,0 C -11,-24 -4,-46 11,-50 C 20,-31 13,-9 0,0 Z" fill="currentColor" opacity="0.75" stroke="currentColor" stroke-width="1.8"/>` },
+    bura:     { label:'Bura', cls:'mod-bura',
+      svg:`<line x1="0" y1="0" x2="0" y2="-44" stroke="currentColor" stroke-width="2.6"/><path d="M0,-42 L20,-24 L0,-24 Z" fill="currentColor" opacity="0.55" stroke="currentColor" stroke-width="1.4"/>` },
+    skruve:   { label:'Gaisa skrūve (da Vinči)', cls:'mod-skruve',
+      svg:`<path d="M0,-26 C -13,-44 13,-44 0,-26 C -13,-9 13,-9 0,-26" fill="none" stroke="currentColor" stroke-width="2.6"/><circle cx="0" cy="-26" r="3" fill="currentColor"/>` },
+    vejradis: { label:'Vējrādis', cls:'mod-vejradis',
+      svg:`<line x1="0" y1="0" x2="0" y2="-44" stroke="currentColor" stroke-width="1.8" opacity="0.6"/><path d="M0,-42 L13,-26 L0,-26 Z" fill="currentColor"/><path d="M0,-26 L-11,-18 L0,-18 Z" fill="currentColor" opacity="0.6"/>` }
+  };
+
+  function spiralPathStr(cx, cy, turns, maxR, minR, steps){
+    steps = steps || 48;
+    let d = '';
+    for(let i=0;i<=steps;i++){
+      const t = i/steps;
+      const angle = t * turns * 2*Math.PI;
+      const r = minR + (maxR-minR)*t;
+      const x = cx + r*Math.cos(angle);
+      const y = cy + r*Math.sin(angle);
+      d += (i===0?'M':'L') + x.toFixed(1)+','+y.toFixed(1)+' ';
+    }
+    return d.trim();
+  }
+
+  const HEAD_TYPES = {
+    gliemezis: { label:'Gliemežvāks', cls:'head-gliemezis',
+      svg:`<line x1="0" y1="0" x2="5" y2="0" stroke="currentColor" stroke-width="2"/><path d="${spiralPathStr(14,0,2.3,10,1.4)}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>` },
+    apala:  { label:'Apaļa ar aci', cls:'head-apala',
+      svg:`<circle cx="14" cy="0" r="11" fill="none" stroke="currentColor" stroke-width="2.2"/><circle class="pupil" cx="14" cy="0" r="3.4" fill="currentColor"/>` },
+    antena: { label:'Antenu kopa', cls:'head-antena',
+      svg:`<line x1="0" y1="0" x2="16" y2="-13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="-13" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><line x1="0" y1="0" x2="19" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="19" cy="1" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><line x1="0" y1="0" x2="16" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="13" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/>` }
+  };
+  const TAIL_TYPES = {
+    smailaAste: { label:'Smaila', cls:'tail-smaila',
+      svg:`<path d="M0,-4.5 L-26,0 L0,4.5 Z" fill="currentColor" opacity="0.82"/>` },
+    spalvu:     { label:'Spalvu vēdeklis', cls:'tail-spalvu',
+      svg:`<line x1="0" y1="0" x2="-25" y2="-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="0" x2="-29" y2="-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="0" x2="-29" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="0" x2="-25" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>` },
+    daksas:     { label:'Dakšveida', cls:'tail-daksas',
+      svg:`<path d="M0,-3 L-22,-15 L-13,0 L-22,15 L0,3 Z" fill="currentColor" opacity="0.75" stroke="currentColor" stroke-width="1.4"/>` }
+  };
+
+
+  const SPINE_STRUCTURES = {
+    simple:    { label:'Vienkāršs', baseSlots:5 },
+    composite: { label:'Saliktais', baseSlots:6 },
+    complex:   { label:'Tilta (da Vinči)', baseSlots:7 }
+  };
+  const SPINE_SPACING = {
+    wide:   { label:'Plati',   delta:-2, gap:74 },
+    normal: { label:'Normāli', delta:0,  gap:52 },
+    tight:  { label:'Cieši',   delta:3,  gap:34 }
+  };
+  const SPINE_MOTIONS = {
+    rigid: { label:'Stīvs' },
+    snake: { label:'Čūska' },
+    kite:  { label:'Gaisa pūķis' }
+  };
+
+  function currentSlotCount(){
+    const n = SPINE_STRUCTURES[state.spineStructure].baseSlots + SPINE_SPACING[state.spineSpacing].delta;
+    return Math.max(3, Math.min(10, n));
+  }
+  function currentWidth(){
+    return 60 + currentSlotCount() * SPINE_SPACING[state.spineSpacing].gap;
+  }
+
+  const MATERIALS = {
+    bone:  { label:'Kaula balts', color:'#E7DEC8' },
+    amber: { label:'Dzintara',    color:'#FFA94D' },
+    cyan:  { label:'Okeāna zils', color:'#5EC9E8' }
+  };
+
+  const WIND_LEVELS = {
+    light:    { label:'Vieglais vējš', cycle:1.7, walk:16, amp:0.6, glow:4,  vane:6,   screw:2.4, mist:5,  lines:4  },
+    moderate: { label:'Mērenais vējš', cycle:1.0, walk:10, amp:1.0, glow:7,  vane:4,   screw:1.3, mist:9,  lines:7  },
+    strong:   { label:'Vētra',         cycle:0.55,walk:6,  amp:1.6, glow:12, vane:1.8, screw:0.6, mist:15, lines:11 }
+  };
+
+  const LOWER_DEFS = Object.assign({}, LEG_TYPES, WHEEL_TYPES, FIN_TYPES);
+
+  /* ================= State ================= */
+
+  function freshSlots(n){ return Array.from({length:n}, ()=>({lower:null, upper:null, lowerDoodle:null, upperDoodle:null})); }
+
+  const state = {
+    spineStructure: 'simple',
+    spineSpacing: 'normal',
+    spineMotion: 'rigid',
+    slots: freshSlots(SPINE_STRUCTURES.simple.baseSlots),
+    head: null,
+    tail: null,
+    headDoodle: null,
+    tailDoodle: null,
+    bonds: [],
+    material: 'bone',
+    wind: 'moderate',
+    armedLower: 'smaile',
+    armedUpper: 'spans',
+    bindMode: false,
+    bindSelection: [],
+    drawMode: false,
+    mode: 'build'
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  /* ================= Palette rendering ================= */
+
+  function legPreviewSVG(key){
+    const def = LEG_TYPES[key];
+    const total = def.segments.reduce((a,s)=>a+s.len,0);
+    let y=0, inner='';
+    def.segments.forEach(seg=>{ inner += `<g transform="translate(14, ${y})">${segMarkup(seg.len, seg.shape, seg.sw, seg.joint)}</g>`; y+=seg.len; });
+    return `<svg viewBox="-8 -8 36 ${total+16}">${inner}</svg>`;
+  }
+  function wheelPreviewSVG(key){
+    const d = WHEEL_TYPES[key];
+    return `<svg viewBox="-24 -6 48 52">${wheelInner(d.r, d.teeth)}</svg>`;
+  }
+  function finPreviewSVG(key){
+    const d = FIN_TYPES[key];
+    return `<svg viewBox="${-d.wide-6} -4 ${2*(d.wide+6)} ${d.len+10}">${finInner(d.len,d.wide,d.translucent)}</svg>`;
+  }
+  function upperPreviewSVG(key){
+    const d = UPPER_TYPES[key];
+    return `<svg viewBox="-26 -54 52 58">${d.svg}</svg>`;
+  }
+
+  function gearRimPath(cx, cy, rOuter, rInner, teeth){
+    const step = Math.PI*2/(teeth*2);
+    let d = '';
+    for(let i=0;i<teeth*2;i++){
+      const r = i%2===0 ? rOuter : rInner;
+      const a = i*step - Math.PI/2;
+      const x = cx + r*Math.cos(a), y = cy + r*Math.sin(a);
+      d += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    }
+    return d + 'Z';
+  }
+
+  function wheelInner(r, teeth){
+    const cy = 6+r;
+    let s = `<line x1="0" y1="0" x2="0" y2="6" stroke="currentColor" stroke-width="2.3"/>`;
+    if(teeth){
+      s += `<path d="${gearRimPath(0,cy,r+4,r-3,8)}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>`;
+      s += `<circle cx="0" cy="${cy}" r="${r-8}" fill="none" stroke="currentColor" stroke-width="1.8"/>`;
+      s += `<circle cx="0" cy="${cy}" r="1.8" fill="currentColor"/>`;
+      for(let a=0;a<360;a+=90){
+        const rad=a*Math.PI/180;
+        s += `<line x1="${(r-8)*Math.sin(rad)}" y1="${cy-(r-8)*Math.cos(rad)}" x2="${(r-3)*Math.sin(rad)}" y2="${cy-(r-3)*Math.cos(rad)}" stroke="currentColor" stroke-width="1.6"/>`;
+      }
+    } else {
+      s += `<circle cx="0" cy="${cy}" r="${r}" fill="none" stroke="currentColor" stroke-width="2.3"/>`;
+      for(let a=0;a<360;a+=45){
+        const rad=a*Math.PI/180;
+        s += `<line x1="0" y1="${cy}" x2="${r*Math.sin(rad)}" y2="${cy - r*Math.cos(rad)}" stroke="currentColor" stroke-width="1.3"/>`;
+      }
+      s += `<circle cx="0" cy="${cy}" r="2" fill="currentColor"/>`;
+    }
+    return s;
+  }
+  function finInner(len, wide, translucent){
+    const outline = `M0,0 C ${wide},${len*0.16} ${wide*0.92},${len*0.72} 0,${len} C ${-wide*0.92},${len*0.72} ${-wide},${len*0.16} 0,0 Z`;
+    if(translucent){
+      let veins = '';
+      [0.3,0.55,0.8].forEach(f=>{
+        veins += `<path d="M0,${(len*0.1).toFixed(1)} Q${(wide*f).toFixed(1)},${(len*0.4).toFixed(1)} 0,${(len*(0.55+f*0.35)).toFixed(1)}" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.55"/>`;
+        veins += `<path d="M0,${(len*0.1).toFixed(1)} Q${(-wide*f).toFixed(1)},${(len*0.4).toFixed(1)} 0,${(len*(0.55+f*0.35)).toFixed(1)}" fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.55"/>`;
+      });
+      return `<path d="${outline}" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="2" stroke-opacity="0.85"/>${veins}`;
+    }
+    return `<path d="${outline}" fill="currentColor" opacity="0.78" stroke="currentColor" stroke-width="1.6"/><path d="M0,${(len*0.18).toFixed(1)} L0,${(len*0.86).toFixed(1)}" stroke="currentColor" stroke-width="1" opacity="0.5"/>`;
+  }
+  function headPreviewSVG(key){ return `<svg viewBox="0 -16 24 32">${HEAD_TYPES[key].svg}</svg>`; }
+  function tailPreviewSVG(key){ return `<svg viewBox="-30 -16 30 32">${TAIL_TYPES[key].svg}</svg>`; }
+
+  function renderSpineRows(){
+    const sr = $('spineStructRow'); sr.innerHTML='';
+    Object.entries(SPINE_STRUCTURES).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'pill' + (state.spineStructure===key?' active':'');
+      el.textContent = def.label;
+      el.addEventListener('click', ()=> changeStructure(key));
+      sr.appendChild(el);
+    });
+    const spr = $('spineSpacingRow'); spr.innerHTML='';
+    Object.entries(SPINE_SPACING).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'pill' + (state.spineSpacing===key?' active':'');
+      el.textContent = def.label;
+      el.addEventListener('click', ()=> changeSpacing(key));
+      spr.appendChild(el);
+    });
+    const mr = $('spineMotionRow'); mr.innerHTML='';
+    Object.entries(SPINE_MOTIONS).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'pill' + (state.spineMotion===key?' active':'');
+      el.textContent = def.label;
+      el.addEventListener('click', ()=>{ state.spineMotion = key; renderSpineRows(); if(state.mode!=='performance') drawStatic(); });
+      mr.appendChild(el);
+    });
+  }
+
+  function changeStructure(key){
+    if(state.spineStructure===key) return;
+    state.spineStructure = key;
+    state.slots = freshSlots(currentSlotCount());
+    state.bonds = [];
+    $('creature').style.setProperty('--creature-width', currentWidth()+'px');
+    renderSpineRows();
+    renderStageSlots();
+  }
+  function changeSpacing(key){
+    if(state.spineSpacing===key) return;
+    state.spineSpacing = key;
+    state.slots = freshSlots(currentSlotCount());
+    state.bonds = [];
+    $('creature').style.setProperty('--creature-width', currentWidth()+'px');
+    renderSpineRows();
+    renderStageSlots();
+  }
+
+  function renderLowerPalette(){
+    const legWrap = $('legSwatches'); legWrap.innerHTML='';
+    Object.entries(LEG_TYPES).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'swatch' + (state.armedLower===key?' active':'');
+      el.innerHTML = legPreviewSVG(key) + `<span>${def.label}</span>`;
+      el.addEventListener('click', ()=>{ state.armedLower=key; renderLowerPalette(); });
+      legWrap.appendChild(el);
+    });
+    const wheelWrap = $('wheelSwatches'); wheelWrap.innerHTML='';
+    Object.entries(WHEEL_TYPES).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'swatch' + (state.armedLower===key?' active':'');
+      el.innerHTML = wheelPreviewSVG(key) + `<span>${def.label}</span>`;
+      el.addEventListener('click', ()=>{ state.armedLower=key; renderLowerPalette(); });
+      wheelWrap.appendChild(el);
+    });
+    const finWrap = $('finSwatches'); finWrap.innerHTML='';
+    Object.entries(FIN_TYPES).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'swatch' + (state.armedLower===key?' active':'');
+      el.innerHTML = finPreviewSVG(key) + `<span>${def.label}</span>`;
+      el.addEventListener('click', ()=>{ state.armedLower=key; renderLowerPalette(); });
+      finWrap.appendChild(el);
+    });
+    const eraserWrap = $('eraserLowerRow'); eraserWrap.innerHTML='';
+    const eraser = document.createElement('div');
+    eraser.className = 'swatch small eraser' + (state.armedLower==='eraser'?' active':'');
+    eraser.innerHTML = `<div style="font-size:16px;">✕</div><span>Dzēst</span>`;
+    eraser.addEventListener('click', ()=>{ state.armedLower='eraser'; renderLowerPalette(); });
+    eraserWrap.appendChild(eraser);
+  }
+
+  function renderUpperPalette(){
+    const wrap = $('upperSwatches'); wrap.innerHTML='';
+    Object.entries(UPPER_TYPES).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'swatch small' + (state.armedUpper===key?' active':'');
+      el.innerHTML = upperPreviewSVG(key) + `<span>${def.label}</span>`;
+      el.addEventListener('click', ()=>{ state.armedUpper=key; renderUpperPalette(); });
+      wrap.appendChild(el);
+    });
+    const eraser = document.createElement('div');
+    eraser.className = 'swatch small eraser' + (state.armedUpper==='eraser'?' active':'');
+    eraser.innerHTML = `<div style="font-size:16px;">✕</div><span>Dzēst</span>`;
+    eraser.addEventListener('click', ()=>{ state.armedUpper='eraser'; renderUpperPalette(); });
+    wrap.appendChild(eraser);
+  }
+
+  function renderHeadTailPalette(){
+    const hwrap = $('headSwatches'); hwrap.innerHTML='';
+    Object.entries(HEAD_TYPES).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'swatch small' + (state.head===key?' active':'');
+      el.innerHTML = headPreviewSVG(key) + `<span>${def.label}</span>`;
+      el.addEventListener('click', ()=>{ state.head = (state.head===key)?null:key; renderHeadTailPalette(); renderHeadTail(); });
+      hwrap.appendChild(el);
+    });
+    const twrap = $('tailSwatches'); twrap.innerHTML='';
+    Object.entries(TAIL_TYPES).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'swatch small' + (state.tail===key?' active':'');
+      el.innerHTML = tailPreviewSVG(key) + `<span>${def.label}</span>`;
+      el.addEventListener('click', ()=>{ state.tail = (state.tail===key)?null:key; renderHeadTailPalette(); renderHeadTail(); });
+      twrap.appendChild(el);
+    });
+  }
+
+  function renderHeadTail(){
+    const hm = $('headMod'); hm.innerHTML='';
+    if(state.head){
+      const def = HEAD_TYPES[state.head];
+      hm.innerHTML = `<div class="head-inner ${def.cls}"><svg viewBox="0 -16 24 32">${def.svg}</svg></div>`;
+      if(state.headDoodle) appendDoodle(hm.querySelector('svg'), state.headDoodle);
+    }
+    const tm = $('tailMod'); tm.innerHTML='';
+    if(state.tail){
+      const def = TAIL_TYPES[state.tail];
+      tm.innerHTML = `<div class="tail-inner ${def.cls}"><svg viewBox="-30 -16 30 32">${def.svg}</svg></div>`;
+      if(state.tailDoodle) appendDoodle(tm.querySelector('svg'), state.tailDoodle);
+    }
+  }
+
+  function renderMaterialSwatches(){
+    const wrap = $('materialSwatches'); wrap.innerHTML='';
+    Object.entries(MATERIALS).forEach(([key,def])=>{
+      const el = document.createElement('div');
+      el.className = 'color-dot' + (state.material===key?' active':'');
+      el.style.background = def.color; el.title = def.label;
+      el.addEventListener('click', ()=>{ state.material=key; applyMaterial(); renderMaterialSwatches(); });
+      wrap.appendChild(el);
+    });
+  }
+  function renderWindButtons(){
+    const wrap = $('windButtons'); wrap.innerHTML='';
+    Object.entries(WIND_LEVELS).forEach(([key,def])=>{
+      const el = document.createElement('button');
+      el.className = 'wind-btn' + (state.wind===key?' active':'');
+      el.textContent = def.label;
+      el.addEventListener('click', ()=>{ state.wind=key; renderWindButtons(); applyWindDurations(); });
+      wrap.appendChild(el);
+    });
+  }
+
+  function applyMaterial(){ document.documentElement.style.setProperty('--accent', MATERIALS[state.material].color); }
+  function applyWindDurations(){
+    const w = WIND_LEVELS[state.wind];
+    const c = $('creature');
+    c.style.setProperty('--cycle-duration', w.cycle+'s');
+    c.style.setProperty('--amp-mult', w.amp);
+    c.style.setProperty('--glow-blur', w.glow+'px');
+    c.style.setProperty('--vane-duration', w.vane+'s');
+    c.style.setProperty('--screw-duration', w.screw+'s');
+  }
+
+  /* ================= Bind mode ================= */
+
+  function renderBindUI(){
+    $('bindToggleBtn').classList.toggle('on', state.bindMode);
+    $('bindToggleBtn').textContent = state.bindMode ? 'Beigt atlasi' : 'Sasiet daļas';
+    $('bindConfirmBtn').style.display = state.bindMode ? 'inline-block' : 'none';
+    $('bindConfirmBtn').textContent = `Apvienot (${state.bindSelection.length})`;
+    $('bindConfirmBtn').disabled = state.bindSelection.length < 2;
+
+    const list = $('bondList'); list.innerHTML='';
+    state.bonds.forEach((group, gi)=>{
+      const chip = document.createElement('div');
+      chip.className = 'bond-chip';
+      chip.innerHTML = `<span>Mezgls ${gi+1}: daļas #${group.map(i=>i+1).join(', #')}</span>`;
+      const btn = document.createElement('button');
+      btn.textContent = '×';
+      btn.addEventListener('click', ()=>{ state.bonds.splice(gi,1); renderBindUI(); renderStageSlots(); });
+      chip.appendChild(btn);
+      list.appendChild(chip);
+    });
+  }
+
+  $('bindToggleBtn').addEventListener('click', ()=>{
+    state.bindMode = !state.bindMode;
+    state.bindSelection = [];
+    if(state.bindMode){ state.drawMode = false; renderDrawUI(); }
+    renderBindUI();
+    renderStageSlots();
+  });
+  $('bindConfirmBtn').addEventListener('click', ()=>{
+    if(state.bindSelection.length < 2) return;
+    state.bonds = state.bonds.filter(g => !g.some(i=>state.bindSelection.includes(i)));
+    state.bonds.push([...state.bindSelection].sort((a,b)=>a-b));
+    state.bindMode = false;
+    state.bindSelection = [];
+    renderBindUI();
+    renderStageSlots();
+  });
+
+  function toggleBindSelect(i){
+    const idx = state.bindSelection.indexOf(i);
+    if(idx>=0) state.bindSelection.splice(idx,1); else state.bindSelection.push(i);
+    renderBindUI();
+    renderStageSlots();
+  }
+  function removeFromBonds(i){
+    state.bonds = state.bonds
+      .map(g => g.filter(x=>x!==i))
+      .filter(g => g.length>1);
+  }
+
+  /* ================= Free-draw tool ================= */
+
+  function renderDrawUI(){
+    $('drawToggleBtn').classList.toggle('on', state.drawMode);
+    $('drawToggleBtn').textContent = state.drawMode ? 'Beigt zīmēšanu' : '✏️ Zīmēt uz detaļas';
+  }
+
+  $('drawToggleBtn').addEventListener('click', ()=>{
+    state.drawMode = !state.drawMode;
+    if(state.drawMode){ state.bindMode = false; state.bindSelection = []; renderBindUI(); }
+    renderDrawUI();
+    renderStageSlots();
+  });
+
+  function getPartRenderInfo(layer, index){
+    if(layer==='lower'){
+      const key = state.slots[index].lower;
+      if(!key) return null;
+      const fam = LOWER_DEFS[key].family;
+      if(fam==='leg'){
+        const seg0 = LEG_TYPES[key].segments[0];
+        return { viewBox:`-6 -6 32 ${seg0.len+12}`, markup: segMarkup(seg0.len, seg0.shape, seg0.sw, seg0.joint),
+          get:()=>state.slots[index].lowerDoodle, set:(v)=>{state.slots[index].lowerDoodle=v;} };
+      }
+      if(fam==='wheel'){
+        const d = WHEEL_TYPES[key];
+        const effR = d.teeth ? d.r+7 : d.r;
+        return { viewBox:`${-effR} ${-effR} ${2*effR} ${2*effR}`, markup: wheelDiscInner(d.r, d.teeth),
+          get:()=>state.slots[index].lowerDoodle, set:(v)=>{state.slots[index].lowerDoodle=v;} };
+      }
+      if(fam==='fin'){
+        const d = FIN_TYPES[key];
+        return { viewBox:`${-d.wide-4} -2 ${2*(d.wide+4)} ${d.len+6}`, markup: finInner(d.len, d.wide, d.translucent),
+          get:()=>state.slots[index].lowerDoodle, set:(v)=>{state.slots[index].lowerDoodle=v;} };
+      }
+    }
+    if(layer==='upper'){
+      const key = state.slots[index].upper;
+      if(!key) return null;
+      return { viewBox:'-26 -54 52 54', markup: UPPER_TYPES[key].svg,
+        get:()=>state.slots[index].upperDoodle, set:(v)=>{state.slots[index].upperDoodle=v;} };
+    }
+    if(layer==='head'){
+      if(!state.head) return null;
+      return { viewBox:'0 -16 24 32', markup: HEAD_TYPES[state.head].svg,
+        get:()=>state.headDoodle, set:(v)=>{state.headDoodle=v;} };
+    }
+    if(layer==='tail'){
+      if(!state.tail) return null;
+      return { viewBox:'-30 -16 30 32', markup: TAIL_TYPES[state.tail].svg,
+        get:()=>state.tailDoodle, set:(v)=>{state.tailDoodle=v;} };
+    }
+    return null;
+  }
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function appendDoodle(svgEl, d){
+    if(!svgEl || !d) return;
+    const p = document.createElementNS(SVG_NS,'path');
+    p.setAttribute('d', d);
+    p.setAttribute('fill','none');
+    p.setAttribute('stroke','#ffffff');
+    p.setAttribute('stroke-width','1.6');
+    p.setAttribute('stroke-linecap','round');
+    p.setAttribute('stroke-linejoin','round');
+    p.setAttribute('opacity','0.92');
+    svgEl.appendChild(p);
+  }
+
+  function openDrawEditor(layer, index){
+    if(state.mode!=='build') return;
+    const info = getPartRenderInfo(layer, index);
+    if(!info) return;
+    let currentD = info.get() || '';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'drawOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(5,6,9,0.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+
+    const card = document.createElement('div');
+    card.style.cssText = 'background:var(--bg-panel);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:92vw;';
+
+    const title = document.createElement('div');
+    title.style.cssText = "font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--ink);margin-bottom:6px;";
+    title.textContent = 'Zīmē uz detaļas';
+    card.appendChild(title);
+
+    const hint = document.createElement('div');
+    hint.style.cssText = "font-size:11px;color:var(--ink-dim);margin-bottom:10px;";
+    hint.textContent = 'Velc ar peli vai pirkstu — laukums ir plašāks par pašu detaļu (punktotā līnija rāda tās kontūru), lai būtu vieta brīvam zīmējumam.';
+    card.appendChild(hint);
+
+    const vb = info.viewBox.split(' ').map(Number);
+    const padFactor = 2.0;
+    const dw = vb[2]*padFactor, dh = vb[3]*padFactor;
+    const dx = vb[0] - (dw-vb[2])/2, dy = vb[1] - (dh-vb[3])/2;
+    const drawViewBox = `${dx.toFixed(1)} ${dy.toFixed(1)} ${dw.toFixed(1)} ${dh.toFixed(1)}`;
+    const dispSize = 340;
+    const svg = document.createElementNS(SVG_NS,'svg');
+    svg.setAttribute('viewBox', drawViewBox);
+    svg.setAttribute('width', dispSize);
+    svg.setAttribute('height', dispSize);
+    svg.style.cssText = `display:block;background:var(--bg-void);border:1px solid var(--border);border-radius:10px;color:var(--accent);touch-action:none;`;
+
+    const bgG = document.createElementNS(SVG_NS,'g');
+    bgG.setAttribute('opacity','0.9');
+    bgG.innerHTML = info.markup;
+    svg.appendChild(bgG);
+
+    const boundsRect = document.createElementNS(SVG_NS,'rect');
+    boundsRect.setAttribute('x', vb[0]); boundsRect.setAttribute('y', vb[1]);
+    boundsRect.setAttribute('width', vb[2]); boundsRect.setAttribute('height', vb[3]);
+    boundsRect.setAttribute('fill','none');
+    boundsRect.setAttribute('stroke','currentColor');
+    boundsRect.setAttribute('stroke-width','0.4');
+    boundsRect.setAttribute('stroke-dasharray','2,2');
+    boundsRect.setAttribute('opacity','0.35');
+    svg.appendChild(boundsRect);
+
+    const doodlePath = document.createElementNS(SVG_NS,'path');
+    doodlePath.setAttribute('fill','none');
+    doodlePath.setAttribute('stroke','#ffffff');
+    doodlePath.setAttribute('stroke-width','1.8');
+    doodlePath.setAttribute('stroke-linecap','round');
+    doodlePath.setAttribute('stroke-linejoin','round');
+    doodlePath.setAttribute('d', currentD);
+    svg.appendChild(doodlePath);
+
+    const captureRect = document.createElementNS(SVG_NS,'rect');
+    captureRect.id = 'drawCapture';
+    captureRect.setAttribute('x', dx); captureRect.setAttribute('y', dy);
+    captureRect.setAttribute('width', dw); captureRect.setAttribute('height', dh);
+    captureRect.setAttribute('fill','transparent');
+    captureRect.style.cursor = 'crosshair';
+    svg.appendChild(captureRect);
+
+    card.appendChild(svg);
+
+    let drawing = false;
+    function toLocal(evt){
+      const pt = svg.createSVGPoint();
+      pt.x = evt.clientX; pt.y = evt.clientY;
+      const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+      return [loc.x, loc.y];
+    }
+    captureRect.addEventListener('pointerdown', (e)=>{
+      drawing = true;
+      const [x,y] = toLocal(e);
+      currentD += (currentD ? ' ' : '') + `M ${x.toFixed(1)},${y.toFixed(1)}`;
+      doodlePath.setAttribute('d', currentD);
+      captureRect.setPointerCapture(e.pointerId);
+    });
+    captureRect.addEventListener('pointermove', (e)=>{
+      if(!drawing) return;
+      const [x,y] = toLocal(e);
+      currentD += ` L ${x.toFixed(1)},${y.toFixed(1)}`;
+      doodlePath.setAttribute('d', currentD);
+    });
+    const endStroke = ()=>{ drawing = false; };
+    captureRect.addEventListener('pointerup', endStroke);
+    captureRect.addEventListener('pointercancel', endStroke);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:10px;margin-top:12px;';
+
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'btn ghost'; clearBtn.textContent = 'Notīrīt';
+    clearBtn.addEventListener('click', ()=>{ currentD=''; doodlePath.setAttribute('d',''); });
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn primary'; saveBtn.textContent = 'Saglabāt';
+    saveBtn.addEventListener('click', ()=>{ info.set(currentD || null); closeEditor(); renderStageSlots(); });
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn ghost'; cancelBtn.textContent = 'Aizvērt';
+    cancelBtn.addEventListener('click', closeEditor);
+
+    btnRow.appendChild(clearBtn); btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
+    card.appendChild(btnRow);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    function closeEditor(){ overlay.remove(); }
+  }
+
+  /* ================= Stage rendering ================= */
+
+  function slotPositions(){
+    const n = state.slots.length;
+    if(n===1) return [50];
+    return Array.from({length:n}, (_,i)=> 3 + i*(94/(n-1)));
+  }
+
+  function buildLegChain(key){
+    const def = LEG_TYPES[key];
+    let root=null, parent=null;
+    def.segments.forEach((seg,i)=>{
+      const el = document.createElement('div');
+      el.className = 'seg seg-depth-'+Math.min(i,3);
+      el.style.setProperty('--base-angle', seg.baseAngle+'deg');
+      el.innerHTML = `<svg viewBox="-6 -6 32 ${seg.len+12}" width="20" height="${seg.len}">${segMarkup(seg.len, seg.shape, seg.sw, seg.joint)}</svg>`;
+      if(parent){ el.classList.add('nested'); parent.appendChild(el); } else { root = el; }
+      parent = el;
+    });
+    return root;
+  }
+
+  function buildLower(key){
+    const family = LOWER_DEFS[key].family;
+    if(family==='leg') return buildLegChain(key);
+    if(family==='wheel'){
+      const d = WHEEL_TYPES[key];
+      const wrap = document.createElement('div');
+      wrap.className = 'lower-wheel';
+      const stub = document.createElement('div');
+      stub.className = 'wheel-stub';
+      stub.innerHTML = `<svg viewBox="0 0 4 6" width="4" height="6"><line x1="2" y1="0" x2="2" y2="6" stroke="currentColor" stroke-width="2"/></svg>`;
+      const disc = document.createElement('div');
+      disc.className = 'wheel-disc';
+      const effR = d.teeth ? d.r+7 : d.r;
+      disc.style.width = (2*effR)+'px';
+      disc.style.height = (2*effR)+'px';
+      disc.innerHTML = `<svg viewBox="${-effR} ${-effR} ${2*effR} ${2*effR}" width="${2*effR}" height="${2*effR}">${wheelDiscInner(d.r,d.teeth)}</svg>`;
+      wrap.appendChild(stub); wrap.appendChild(disc);
+      return wrap;
+    }
+    if(family==='fin'){
+      const d = FIN_TYPES[key];
+      const wrap = document.createElement('div');
+      wrap.className = 'lower-fin';
+      wrap.innerHTML = `<div class="fin-shape"><svg viewBox="${-d.wide-4} -2 ${2*(d.wide+4)} ${d.len+6}" width="${2*(d.wide+4)}" height="${d.len+6}">${finInner(d.len,d.wide,d.translucent)}</svg></div>`;
+      return wrap;
+    }
+  }
+  function wheelDiscInner(r, teeth){
+    if(teeth){
+      let s = `<path d="${gearRimPath(0,0,r+4,r-3,8)}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>`;
+      s += `<circle cx="0" cy="0" r="${r-8}" fill="none" stroke="currentColor" stroke-width="1.8"/>`;
+      s += `<circle cx="0" cy="0" r="1.8" fill="currentColor"/>`;
+      for(let a=0;a<360;a+=90){
+        const rad=a*Math.PI/180;
+        s += `<line x1="${(r-8)*Math.sin(rad)}" y1="${-(r-8)*Math.cos(rad)}" x2="${(r-3)*Math.sin(rad)}" y2="${-(r-3)*Math.cos(rad)}" stroke="currentColor" stroke-width="1.6"/>`;
+      }
+      return s;
+    }
+    let s = `<circle cx="0" cy="0" r="${r}" fill="none" stroke="currentColor" stroke-width="2.3"/>`;
+    for(let a=0;a<360;a+=45){
+      const rad=a*Math.PI/180;
+      s += `<line x1="0" y1="0" x2="${r*Math.sin(rad)}" y2="${-r*Math.cos(rad)}" stroke="currentColor" stroke-width="1.3"/>`;
+    }
+    s += `<circle cx="0" cy="0" r="1.8" fill="currentColor"/>`;
+    return s;
+  }
+
+  function buildUpper(key){
+    const d = UPPER_TYPES[key];
+    const wrap = document.createElement('div');
+    wrap.className = 'upper-mod ' + d.cls;
+    wrap.innerHTML = `<svg viewBox="-26 -54 52 54" width="44" height="46">${d.svg}</svg>`;
+    return wrap;
+  }
+
+  function renderStageSlots(){
+    document.querySelectorAll('.slot').forEach(n=>n.remove());
+    const positions = slotPositions();
+    positions.forEach((pos,i)=>{
+      const slotEl = document.createElement('div');
+      slotEl.className = 'slot' + (state.bindSelection.includes(i) ? ' bind-selected' : '');
+      slotEl.style.left = pos+'%';
+
+      const num = document.createElement('div');
+      num.className='slot-num'; num.textContent = i+1;
+      slotEl.appendChild(num);
+
+      const upperWrap = document.createElement('div');
+      upperWrap.className = 'upper-wrap';
+      if(state.slots[i].upper){
+        const uNode = buildUpper(state.slots[i].upper);
+        upperWrap.appendChild(uNode);
+        if(state.slots[i].upperDoodle) appendDoodle(uNode.querySelector('svg'), state.slots[i].upperDoodle);
+      }
+      slotEl.appendChild(upperWrap);
+
+      const upperHit = document.createElement('div');
+      upperHit.className = 'upper-hit';
+      upperHit.addEventListener('click', ()=> handleUpperClick(i));
+      slotEl.appendChild(upperHit);
+
+      const lowerWrap = document.createElement('div');
+      lowerWrap.className = 'lower-wrap';
+      if(state.slots[i].lower){
+        const key = state.slots[i].lower;
+        const lNode = buildLower(key);
+        lowerWrap.appendChild(lNode);
+        if(state.slots[i].lowerDoodle){
+          const fam = LOWER_DEFS[key].family;
+          let targetSvg;
+          if(fam==='leg') targetSvg = lNode.querySelector('svg');
+          else if(fam==='wheel') targetSvg = lNode.querySelector('.wheel-disc svg');
+          else if(fam==='fin') targetSvg = lNode.querySelector('.fin-shape svg');
+          appendDoodle(targetSvg, state.slots[i].lowerDoodle);
+        }
+      }
+      else { const ph=document.createElement('div'); ph.className='slot-empty'; lowerWrap.appendChild(ph); }
+      slotEl.appendChild(lowerWrap);
+
+      const lowerHit = document.createElement('div');
+      lowerHit.className = 'lower-hit';
+      lowerHit.addEventListener('click', ()=> handleLowerClick(i));
+      slotEl.appendChild(lowerHit);
+
+      $('creatureInner').appendChild(slotEl);
+    });
+    renderHeadTail();
+    updateCounter();
+    if(state.mode!=='performance') drawStatic();
+  }
+
+  function handleLowerClick(i){
+    if(state.mode!=='build') return;
+    if(state.drawMode){
+      if(state.slots[i].lower) openDrawEditor('lower', i);
+      return;
+    }
+    if(state.bindMode){
+      if(!state.slots[i].lower) return;
+      toggleBindSelect(i);
+      return;
+    }
+    state.slots[i].lower = (state.armedLower==='eraser') ? null : state.armedLower;
+    if(!state.slots[i].lower) removeFromBonds(i);
+    renderStageSlots();
+  }
+  function handleUpperClick(i){
+    if(state.mode!=='build') return;
+    if(state.drawMode){
+      if(state.slots[i].upper) openDrawEditor('upper', i);
+      return;
+    }
+    if(state.bindMode) return;
+    state.slots[i].upper = (state.armedUpper==='eraser') ? null : state.armedUpper;
+    renderStageSlots();
+  }
+
+  function updateCounter(){
+    const filled = state.slots.filter(s=>s.lower).length;
+    $('counter').innerHTML = `Pievienotas <b>${filled}</b> / ${state.slots.length} piedziņas daļas — vajag vismaz 3`;
+    $('launchBtn').disabled = filled < 3;
+  }
+
+  function clearAll(){
+    state.slots = freshSlots(state.slots.length);
+    state.bonds = [];
+    state.bindMode = false;
+    state.bindSelection = [];
+    renderBindUI();
+    renderStageSlots();
+  }
+
+  function randomize(){
+    const structKeys = Object.keys(SPINE_STRUCTURES);
+    state.spineStructure = structKeys[Math.floor(Math.random()*structKeys.length)];
+    const spacingKeys = Object.keys(SPINE_SPACING);
+    state.spineSpacing = spacingKeys[Math.floor(Math.random()*spacingKeys.length)];
+    const motionKeys = Object.keys(SPINE_MOTIONS);
+    state.spineMotion = motionKeys[Math.floor(Math.random()*motionKeys.length)];
+    $('creature').style.setProperty('--creature-width', currentWidth()+'px');
+    renderSpineRows();
+
+    const lowerKeys = Object.keys(LOWER_DEFS);
+    const n = currentSlotCount();
+    state.slots = freshSlots(n).map(()=> ({
+      lower: Math.random()>0.25 ? lowerKeys[Math.floor(Math.random()*lowerKeys.length)] : null,
+      upper: Math.random()>0.6 ? Object.keys(UPPER_TYPES)[Math.floor(Math.random()*4)] : null
+    }));
+    let filledIdx = state.slots.map((s,i)=>s.lower?i:-1).filter(i=>i>=0);
+    while(filledIdx.length < 3){
+      const idx = Math.floor(Math.random()*n);
+      if(!state.slots[idx].lower){ state.slots[idx].lower = lowerKeys[Math.floor(Math.random()*lowerKeys.length)]; filledIdx.push(idx); }
+    }
+    state.bonds = [];
+    if(filledIdx.length>=4 && Math.random()>0.4){
+      const shuffled = [...filledIdx].sort(()=>Math.random()-0.5);
+      state.bonds.push(shuffled.slice(0, 2+Math.floor(Math.random()*2)).sort((a,b)=>a-b));
+    }
+
+    const headKeys = Object.keys(HEAD_TYPES);
+    const tailKeys = Object.keys(TAIL_TYPES);
+    state.head = Math.random()>0.3 ? headKeys[Math.floor(Math.random()*headKeys.length)] : null;
+    state.tail = Math.random()>0.3 ? tailKeys[Math.floor(Math.random()*tailKeys.length)] : null;
+
+    const matKeys = Object.keys(MATERIALS);
+    state.material = matKeys[Math.floor(Math.random()*matKeys.length)];
+    applyMaterial();
+
+    renderMaterialSwatches();
+    renderLowerPalette();
+    renderUpperPalette();
+    renderHeadTailPalette();
+    renderBindUI();
+    renderStageSlots();
+  }
+
+  /* ================= Spine path drawing ================= */
+
+  function smoothPath(pts){
+    if(pts.length<2) return '';
+    let d = `M ${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for(let i=1;i<pts.length;i++){
+      const [x0,y0]=pts[i-1], [x1,y1]=pts[i];
+      const mx=(x0+x1)/2, my=(y0+y1)/2;
+      d += ` Q ${x0.toFixed(1)},${y0.toFixed(1)} ${mx.toFixed(1)},${my.toFixed(1)}`;
+    }
+    const last = pts[pts.length-1];
+    d += ` T ${last[0].toFixed(1)},${last[1].toFixed(1)}`;
+    return d;
+  }
+
+  function buildSpineMarkup(withY, structure){
+    let out = '';
+    if(structure==='simple'){
+      out = `<path d="${smoothPath(withY)}" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>`;
+      withY.forEach(([x,y])=> out+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2" fill="currentColor" opacity="0.7"/>`);
+    } else if(structure==='composite'){
+      const top = withY.map(([x,y])=>[x,y-9]);
+      const bot = withY.map(([x,y])=>[x,y+9]);
+      out = `<path d="${smoothPath(top)}" fill="none" stroke="currentColor" stroke-width="2.8"/>`;
+      out += `<path d="${smoothPath(bot)}" fill="none" stroke="currentColor" stroke-width="2.8"/>`;
+      withY.forEach(([x,y])=>{
+        out += `<line x1="${x.toFixed(1)}" y1="${(y-9).toFixed(1)}" x2="${x.toFixed(1)}" y2="${(y+9).toFixed(1)}" stroke="currentColor" stroke-width="1.6" opacity="0.6"/>`;
+        out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="currentColor"/>`;
+      });
+    } else {
+      const top = withY.map(([x,y])=>[x,y-13]);
+      const bot = withY.map(([x,y])=>[x,y+13]);
+      out = `<path d="${smoothPath(top)}" fill="none" stroke="currentColor" stroke-width="2.4"/>`;
+      out += `<path d="${smoothPath(bot)}" fill="none" stroke="currentColor" stroke-width="2.4" opacity="0.6"/>`;
+      for(let i=0;i<withY.length-1;i++){
+        const [x0,y0]=withY[i], [x1,y1]=withY[i+1];
+        out += `<line x1="${x0.toFixed(1)}" y1="${(y0-13).toFixed(1)}" x2="${x1.toFixed(1)}" y2="${(y1+13).toFixed(1)}" stroke="currentColor" stroke-width="1.3" opacity="0.65"/>`;
+        out += `<line x1="${x1.toFixed(1)}" y1="${(y1-13).toFixed(1)}" x2="${x0.toFixed(1)}" y2="${(y0+13).toFixed(1)}" stroke="currentColor" stroke-width="1.3" opacity="0.65"/>`;
+      }
+      withY.forEach(([x,y])=> out += `<circle cx="${x.toFixed(1)}" cy="${(y-13).toFixed(1)}" r="2.2" fill="currentColor"/>`);
+    }
+    return out;
+  }
+
+  const BASELINE = 30;
+
+  function drawScene(dyList){
+    const w = currentWidth();
+    const xs = slotPositions().map(p=> p/100*w);
+    const withY = xs.map((x,i)=> [x, BASELINE + (dyList ? dyList[i] : 0)]);
+    $('spineVisual').innerHTML = `<svg viewBox="0 -6 ${w} 72">${buildSpineMarkup(withY, state.spineStructure)}</svg>`;
+    const slotEls = document.querySelectorAll('.slot');
+    slotEls.forEach((el,i)=>{
+      const dy = dyList ? dyList[i] : 0;
+      el.style.transform = dy ? `translateY(${dy.toFixed(1)}px)` : '';
+    });
+    if(dyList && dyList.length){
+      const dyFirst = dyList[0], dyLast = dyList[dyList.length-1];
+      $('headMod').style.transform = dyFirst ? `translateY(${dyFirst.toFixed(1)}px)` : '';
+      $('tailMod').style.transform = dyLast ? `translateY(${dyLast.toFixed(1)}px)` : '';
+    }
+  }
+
+  function drawStatic(){
+    const n = state.slots.length;
+    drawScene(new Array(n).fill(0));
+  }
+
+  /* ================= Wind particles ================= */
+
+  function spawnParticles(){
+    const wrap = $('windParticles');
+    wrap.innerHTML = '';
+    const w = WIND_LEVELS[state.wind];
+    for(let i=0;i<w.lines;i++){
+      const line = document.createElement('div');
+      line.className = 'wind-line';
+      line.style.top = (Math.random()*90+4)+'%';
+      line.style.width = (40+Math.random()*70)+'px';
+      line.style.setProperty('--peak-op', 0.6);
+      line.style.animationDuration = (1.6+Math.random()*2.2)+'s';
+      line.style.animationDelay = '-'+(Math.random()*3)+'s';
+      wrap.appendChild(line);
+    }
+    for(let i=0;i<w.mist;i++){
+      const mist = document.createElement('div');
+      mist.className = 'wind-mist';
+      const size = 60+Math.random()*110;
+      mist.style.width = size+'px';
+      mist.style.height = (size*0.4)+'px';
+      mist.style.top = (Math.random()*94)+'%';
+      mist.style.setProperty('--peak-op', 0.22+Math.random()*0.16);
+      mist.style.animationDuration = (3+Math.random()*3.5)+'s';
+      mist.style.animationDelay = '-'+(Math.random()*5)+'s';
+      wrap.appendChild(mist);
+    }
+    wrap.classList.add('gusting');
+  }
+
+  /* ================= Launch / animate ================= */
+
+  let rafId = null;
+  let animStart = null;
+  let pausedAccum = 0;
+  let pauseStartedAt = null;
+  let isPaused = false;
+
+  function computePhaseUnits(){
+    const filledIdx = state.slots.map((s,i)=> s.lower ? i : -1).filter(i=>i>=0);
+    const covered = new Set();
+    const units = [];
+    filledIdx.forEach(i=>{
+      if(covered.has(i)) return;
+      const bond = state.bonds.find(g=>g.includes(i));
+      if(bond){ units.push(bond.filter(x=>filledIdx.includes(x))); bond.forEach(x=>covered.add(x)); }
+      else { units.push([i]); covered.add(i); }
+    });
+    return units;
+  }
+
+  function launchWind(){
+    if(state.slots.filter(s=>s.lower).length < 3) return;
+    state.mode = 'performance';
+    $('palettePanel').classList.add('hide');
+    $('buildBtnWrap').style.display = 'none';
+    $('perfControls').classList.add('show');
+    $('stageHint').style.display = 'none';
+    applyWindDurations();
+
+    const cycle = WIND_LEVELS[state.wind].cycle;
+    const units = computePhaseUnits();
+    const phaseOf = {};
+    units.forEach((group, gi)=>{ group.forEach(i=> phaseOf[i] = gi*(cycle/Math.max(units.length,1))); });
+
+    const slotEls = document.querySelectorAll('.slot');
+    slotEls.forEach((slotEl, i)=>{
+      if(!state.slots[i].lower) return;
+      const legDelay = phaseOf[i] || 0;
+      let depth=0, node = slotEl.querySelector('.lower-wrap > .seg');
+      while(node){
+        node.style.animationDelay = (legDelay + depth*cycle*0.07)+'s';
+        depth++;
+        node = node.querySelector(':scope > .seg');
+      }
+      const wheelDisc = slotEl.querySelector('.wheel-disc');
+      if(wheelDisc) wheelDisc.style.animationDelay = legDelay+'s';
+      const fin = slotEl.querySelector('.lower-fin');
+      if(fin) fin.style.animationDelay = legDelay+'s';
+    });
+    document.querySelectorAll('.upper-mod').forEach((el,i)=>{ el.style.animationDelay = (i*0.15)+'s'; });
+
+    const gust = $('gustSweep');
+    gust.classList.add('play');
+    spawnParticles();
+    gust.addEventListener('animationend', function onEnd(){
+      gust.removeEventListener('animationend', onEnd);
+      $('creature').classList.add('awake');
+      $('creature').classList.add('walking');
+      startRAF();
+    });
+  }
+
+  function startRAF(){
+    animStart = null; pausedAccum = 0; isPaused = false;
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function tick(ts){
+    if(animStart===null) animStart = ts;
+    if(!isPaused){
+      const t = (ts - animStart - pausedAccum)/1000;
+      updateScene(t);
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function updateScene(t){
+    const stageEl = $('stageFrame');
+    const stageW = stageEl.clientWidth || 700;
+    const cw = currentWidth();
+    const w = WIND_LEVELS[state.wind];
+    const leftMin = stageW*0.03;
+    const leftMax = Math.max(stageW - cw - 10, leftMin+20);
+    const span = leftMax - leftMin;
+
+    const ping = (Math.sin(2*Math.PI*t/(w.walk*2) - Math.PI/2)+1)/2;
+    let x = leftMin + ping*span;
+    let y = 96, rot = 0;
+
+    if(state.spineMotion==='kite'){
+      y = 96 - 42*Math.abs(Math.sin(2*Math.PI*t/(w.walk*1.3)));
+      rot = 6*Math.sin(2*Math.PI*t/(w.cycle*3));
+    }
+
+    const creature = $('creature');
+    creature.style.left = x+'px';
+    creature.style.top = y+'px';
+    creature.style.transform = rot ? `rotate(${rot.toFixed(2)}deg)` : '';
+
+    const n = state.slots.length;
+    let dyList = new Array(n).fill(0);
+    if(state.spineMotion==='snake'){
+      for(let i=0;i<n;i++) dyList[i] = 13*Math.sin(2*Math.PI*t/w.cycle - i*(Math.PI*1.6/Math.max(n-1,1)));
+    } else if(state.spineMotion==='kite'){
+      for(let i=0;i<n;i++) dyList[i] = 6*Math.sin(2*Math.PI*t/(w.cycle*1.6) - i*(Math.PI*0.8/Math.max(n-1,1)));
+    }
+    drawScene(dyList);
+  }
+
+  function pauseToggle(){
+    isPaused = !isPaused;
+    if(isPaused){ pauseStartedAt = performance.now(); }
+    else { pausedAccum += performance.now() - pauseStartedAt; }
+
+    const ns = isPaused ? 'paused' : 'running';
+    document.querySelectorAll('.seg, .wheel-disc, .lower-fin, .upper-mod, .head-inner, .tail-inner, .pupil').forEach(el=> el.style.animationPlayState = ns);
+    $('windParticles').querySelectorAll('.wind-line, .wind-mist').forEach(el=> el.style.animationPlayState = ns);
+    $('pauseBtn').textContent = isPaused ? '▶ Turpināt vēju' : '⏸ Apturēt vēju';
+  }
+
+  function backToWorkshop(){
+    state.mode = 'build';
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = null; isPaused = false;
+    const creature = $('creature');
+    creature.classList.remove('walking','awake');
+    creature.style.left = ''; creature.style.top=''; creature.style.transform='';
+    document.querySelectorAll('.seg, .wheel-disc, .lower-fin, .upper-mod, .head-inner, .tail-inner, .pupil').forEach(el=>{ el.style.animationDelay=''; el.style.animationPlayState=''; });
+    $('gustSweep').classList.remove('play');
+    $('windParticles').classList.remove('gusting');
+    $('windParticles').innerHTML = '';
+    $('palettePanel').classList.remove('hide');
+    $('buildBtnWrap').style.display = 'flex';
+    $('perfControls').classList.remove('show');
+    $('pauseBtn').textContent = '⏸ Apturēt vēju';
+    $('stageHint').style.display = '';
+    drawStatic();
+  }
+
+  /* ================= init ================= */
+  applyMaterial();
+  renderSpineRows();
+  renderLowerPalette();
+  renderUpperPalette();
+  renderHeadTailPalette();
+  renderMaterialSwatches();
+  renderWindButtons();
+  renderBindUI();
+  renderDrawUI();
+  $('creature').style.setProperty('--creature-width', currentWidth()+'px');
+  renderStageSlots();
+  applyWindDurations();
+
+  $('clearBtn').addEventListener('click', clearAll);
+  $('randomBtn').addEventListener('click', randomize);
+  $('launchBtn').addEventListener('click', launchWind);
+  $('pauseBtn').addEventListener('click', pauseToggle);
+  $('backBtn').addEventListener('click', backToWorkshop);
+  $('headMod').addEventListener('click', ()=>{ if(state.mode==='build' && state.drawMode && state.head) openDrawEditor('head', 0); });
+  $('tailMod').addEventListener('click', ()=>{ if(state.mode==='build' && state.drawMode && state.tail) openDrawEditor('tail', 0); });
+
+})();
+</script>
+
+</body>
+</html>
